@@ -48,17 +48,15 @@
   </div>
 
   <script>
-    // Google Sheets JSON URL
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/1jk70V1xgiPJGWEU1k2X7cmbwEamGXkO4FrlGhv-VzzQ/gviz/tq?tqx=out:json";
+    // CSV形式で公開したスプレッドシートのURL
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTUPW7sTouH5HARIfJ13xLHN6xTVwoHQoThYJkfgP6a8wAx5HnmQ5wNfYBGuzXnCR3MRs9Gdy8A9-wP/pub?output=csv";
 
     fetch(sheetUrl)
       .then(res => res.text())
-      .then(text => {
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-
-        // A列: S&P500、B列: USD/JPY 為替
-        const priceUSD = parseFloat(json.table.rows[0].c[0].v);
-        const usdToJpy  = parseFloat(json.table.rows[0].c[1].v);
+      .then(csv => {
+        const rows = csv.split("\n").map(r => r.split(","));
+        const priceUSD = parseFloat(rows[1][0]);  // 2行目A列
+        const usdToJpy  = parseFloat(rows[1][1]); // 2行目B列
 
         const priceJPY = priceUSD * usdToJpy;
 
@@ -66,7 +64,7 @@
         let action = "";
         let comment = "";
 
-        // 判定ロジック（円換算で目安）
+        // 判定ロジック（円換算）
         if (priceJPY > 730000) {
           status  = "高い";
           action  = "様子見";
