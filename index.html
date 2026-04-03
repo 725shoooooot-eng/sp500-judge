@@ -19,6 +19,10 @@
       margin: auto;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
+    .price {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
     .status {
       font-size: 28px;
       font-weight: bold;
@@ -37,35 +41,37 @@
 <body>
 
   <div class="card">
-    <div id="status" class="status">読み込み中…</div>
+    <div id="price" class="price">価格読み込み中…</div>
+    <div id="status" class="status"></div>
     <div id="action" class="action"></div>
     <div id="comment" class="comment"></div>
   </div>
 
   <script>
-    // ↓ Google Sheets JSON の URL（あなたのシートID入り）
+    // Google Sheets JSON URL
     const sheetUrl = "https://docs.google.com/spreadsheets/d/1jk70V1xgiPJGWEU1k2X7cmbwEamGXkO4FrlGhv-VzzQ/gviz/tq?tqx=out:json";
 
     fetch(sheetUrl)
       .then(res => res.text())
       .then(text => {
-        // Google Sheets の gviz JSON 形式から実際の JSON を取り出す
         const json = JSON.parse(text.substr(47).slice(0, -2));
 
-        // 一番最初のセルの値を price とする
-        // （A1に GOOGLEFINANCE で株価を入れている前提）
-        const price = parseFloat(json.table.rows[0].c[0].v);
+        // A列: S&P500、B列: USD/JPY 為替
+        const priceUSD = parseFloat(json.table.rows[0].c[0].v);
+        const usdToJpy  = parseFloat(json.table.rows[0].c[1].v);
+
+        const priceJPY = priceUSD * usdToJpy;
 
         let status = "";
         let action = "";
         let comment = "";
 
-        // 👇 ここが判定ロジック
-        if (price > 5500) {
+        // 判定ロジック（円換算で目安）
+        if (priceJPY > 730000) {
           status  = "高い";
           action  = "様子見";
           comment = "やや割高な水準です";
-        } else if (price > 5000) {
+        } else if (priceJPY > 660000) {
           status  = "普通";
           action  = "積立OK";
           comment = "平均的な価格帯です";
@@ -75,14 +81,16 @@
           comment = "割安の可能性があります";
         }
 
-        // HTML に反映
-        document.getElementById("status").innerText  = status;
-        document.getElementById("action").innerText  = action;
+        // HTMLに反映
+        document.getElementById("price").innerText  = "現在価格: " + priceJPY.toLocaleString() + " 円";
+        document.getElementById("status").innerText = status;
+        document.getElementById("action").innerText = action;
         document.getElementById("comment").innerText = comment;
       })
       .catch(err => {
-        document.getElementById("status").innerText  = "取得失敗";
-        document.getElementById("action").innerText  = "";
+        document.getElementById("price").innerText  = "価格取得失敗";
+        document.getElementById("status").innerText = "";
+        document.getElementById("action").innerText = "";
         document.getElementById("comment").innerText = "再読み込みしてください";
         console.error(err);
       });
