@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>S&P500 投資判断</title>
+  <title>S&P500 投資判断（リアルタイム）</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,7 +16,7 @@
       border-radius: 12px;
       padding: 20px;
       max-width: 400px;
-      margin: 0 auto;
+      margin: auto;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     .status {
@@ -35,37 +35,57 @@
   </style>
 </head>
 <body>
+
   <div class="card">
-    <div id="status" class="status">判定中...</div>
+    <div id="status" class="status">読み込み中…</div>
     <div id="action" class="action"></div>
     <div id="comment" class="comment"></div>
   </div>
 
   <script>
-    // テスト用の固定データ
-    const price = 5200;
+    // ↓ Google Sheets JSON の URL（あなたのシートID入り）
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/1jk70V1xgiPJGWEU1k2X7cmbwEamGXkO4FrlGhv-VzzQ/gviz/tq?tqx=out:json";
 
-    let status = "";
-    let action = "";
-    let comment = "";
+    fetch(sheetUrl)
+      .then(res => res.text())
+      .then(text => {
+        // Google Sheets の gviz JSON 形式から実際の JSON を取り出す
+        const json = JSON.parse(text.substr(47).slice(0, -2));
 
-    if (price > 5500) {
-      status = "高い";
-      action = "様子見";
-      comment = "やや割高な水準です";
-    } else if (price > 5000) {
-      status = "普通";
-      action = "積立OK";
-      comment = "平均的な価格帯です";
-    } else {
-      status = "チャンス";
-      action = "検討OK";
-      comment = "割安の可能性があります";
-    }
+        // 一番最初のセルの値を price とする
+        // （A1に GOOGLEFINANCE で株価を入れている前提）
+        const price = parseFloat(json.table.rows[0].c[0].v);
 
-    document.getElementById("status").innerText = status;
-    document.getElementById("action").innerText = action;
-    document.getElementById("comment").innerText = comment;
+        let status = "";
+        let action = "";
+        let comment = "";
+
+        // 👇 ここが判定ロジック
+        if (price > 5500) {
+          status  = "高い";
+          action  = "様子見";
+          comment = "やや割高な水準です";
+        } else if (price > 5000) {
+          status  = "普通";
+          action  = "積立OK";
+          comment = "平均的な価格帯です";
+        } else {
+          status  = "チャンス";
+          action  = "検討OK";
+          comment = "割安の可能性があります";
+        }
+
+        // HTML に反映
+        document.getElementById("status").innerText  = status;
+        document.getElementById("action").innerText  = action;
+        document.getElementById("comment").innerText = comment;
+      })
+      .catch(err => {
+        document.getElementById("status").innerText  = "取得失敗";
+        document.getElementById("action").innerText  = "";
+        document.getElementById("comment").innerText = "再読み込みしてください";
+        console.error(err);
+      });
   </script>
 </body>
 </html>
