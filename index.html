@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>S&P500 投資判断</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 400px;
+      margin: 0 auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .status {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .action {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+    .comment {
+      font-size: 16px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div id="status" class="status">判定中...</div>
+    <div id="action" class="action"></div>
+    <div id="comment" class="comment"></div>
+  </div>
+
+  <script>
+    // テスト用の固定データ
+    const price = 5200;
+
+    let status = "";
+    let action = "";
+    let comment = "";
+
+    if (price > 5500) {
+      status = "高い";
+      action = "様子見";
+      comment = "やや割高な水準です";
+    } else if (price > 5000) {
+      status = "普通";
+      action = "積立OK";
+      comment = "平均的な価格帯です";
+    } else {
+      status = "チャンス";
+      action = "検討OK";
+      comment = "割安の可能性があります";
+    }
+
+    document.getElementById("status").innerText = status;
+    document.getElementById("action").innerText = action;
+    document.getElementById("comment").innerText = comment;
+  </script>
+</body>
+</html>
